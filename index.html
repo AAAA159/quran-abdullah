@@ -1,0 +1,2186 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shiro Kingdom Central Bank — البنك المركزي للمملكة</title>
+<meta name="description" content="البنك المركزي الداخلي لمملكة Shiro؛ لتنظيم حسابات الأعضاء والنقابات والاستحقاقات والمزايا الرسمية داخل المملكة.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #04070c;
+  --surface: #0a0f18;
+  --line: rgba(255,255,255,0.07);
+  --text: #f0f5fa;
+  --muted: #7a8a9e;
+  --cyan: #00d4ff;
+  --cyan-dim: rgba(0,212,255,0.15);
+  --gold: #d4af37;
+  --gold-dim: rgba(212,175,55,0.15);
+  --danger: #ff4757;
+  --success: #2ed573;
+  --radius: 20px;
+  --t: 0.45s cubic-bezier(0.22,1,0.36,1);
+}
+
+[data-theme="cyan"]   { --cyan:#00d4ff; --cyan-dim:rgba(0,212,255,0.15); }
+[data-theme="purple"] { --cyan:#a855f7; --cyan-dim:rgba(168,85,247,0.15); }
+[data-theme="gold"]   { --cyan:#d4af37; --cyan-dim:rgba(212,175,55,0.15); }
+[data-theme="pink"]   { --cyan:#ec4899; --cyan-dim:rgba(236,72,153,0.15); }
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: Cairo, 'Segoe UI', sans-serif;
+  overflow-x: hidden;
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  html { scroll-behavior: auto; }
+}
+
+a { text-decoration: none; color: inherit; }
+button, input { font: inherit; border: none; outline: none; }
+button:focus-visible, a:focus-visible, input:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 3px;
+}
+
+.wrap {
+  width: min(1200px, calc(100% - 48px));
+  margin: auto;
+  position: relative;
+  z-index: 2;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: .02;
+  pointer-events: none;
+  z-index: 9998;
+}
+
+/* Preloader */
+#preloader {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  transition: opacity .9s, visibility .9s;
+}
+#preloader.hide {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.loader-ring {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  border-top-color: var(--cyan);
+  border-right-color: var(--gold);
+  animation: spin 1.2s linear infinite;
+  display: grid;
+  place-items: center;
+  position: relative;
+}
+.loader-ring::before {
+  content: '城';
+  font-size: 24px;
+  color: var(--cyan);
+  animation: spin 1.2s linear infinite reverse;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loader-text {
+  font: 600 12px 'Space Grotesk', monospace;
+  letter-spacing: .35em;
+  color: var(--muted);
+  direction: ltr;
+}
+.loader-bar {
+  width: 160px;
+  height: 2px;
+  background: var(--line);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+.loader-bar::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, var(--cyan), var(--gold));
+  transform: translateX(-100%);
+  animation: loadSlide 2s forwards;
+}
+@keyframes loadSlide { to { transform: translateX(0); } }
+
+/* Cursor */
+.cursor, .cursor-dot {
+  position: fixed;
+  pointer-events: none;
+  z-index: 99999;
+  transform: translate(-50%, -50%);
+  display: none;
+}
+@media (pointer: fine) {
+  body { cursor: none; }
+  .cursor, .cursor-dot { display: block; }
+}
+.cursor {
+  width: 20px;
+  height: 20px;
+  border: 1.5px solid var(--cyan);
+  border-radius: 50%;
+  transition: width .3s, height .3s, border-color .3s, background .3s;
+  mix-blend-mode: difference;
+}
+.cursor.hover {
+  width: 48px;
+  height: 48px;
+  border-color: var(--gold);
+  background: rgba(212,175,55,.08);
+}
+.cursor-dot {
+  width: 4px;
+  height: 4px;
+  background: var(--cyan);
+  border-radius: 50%;
+}
+
+/* Background */
+.bg-orb {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(100px);
+  pointer-events: none;
+  z-index: 0;
+  opacity: .28;
+}
+.orb-1 {
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, var(--cyan-dim), transparent);
+  top: -200px;
+  right: -200px;
+  animation: floatOrb 22s infinite;
+}
+.orb-2 {
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, var(--gold-dim), transparent);
+  bottom: -100px;
+  left: -100px;
+  animation: floatOrb 28s infinite reverse;
+}
+@keyframes floatOrb {
+  0%,100% { transform: translate(0,0) scale(1); }
+  33% { transform: translate(30px,-30px) scale(1.08); }
+  66% { transform: translate(-20px,20px) scale(.92); }
+}
+#particles {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Scrollbar & Progress */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--cyan), transparent);
+  border-radius: 10px;
+}
+.progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--cyan), var(--gold));
+  z-index: 100000;
+  width: 0%;
+  transition: width .1s linear;
+}
+
+/* Top Bar */
+.top {
+  height: 38px;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 11px;
+  position: relative;
+  z-index: 10;
+  background: rgba(4,7,12,.85);
+  backdrop-filter: blur(12px);
+}
+.top .wrap {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.top .live-clock {
+  font-family: 'Space Grotesk', monospace;
+  color: var(--cyan);
+  letter-spacing: .08em;
+}
+
+/* Header */
+header {
+  height: 76px;
+  position: fixed;
+  top: 38px;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: rgba(4,7,12,.72);
+  border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(24px);
+  transform: translateY(-100%);
+  transition: transform .7s cubic-bezier(0.22,1,0.36,1), background .3s;
+}
+header.visible { transform: translateY(0); }
+header.scrolled {
+  background: rgba(4,7,12,.95);
+  box-shadow: 0 4px 30px rgba(0,0,0,.4);
+}
+nav {
+  height: 76px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  direction: ltr;
+}
+.crest {
+  width: 40px;
+  height: 40px;
+  border: 1.5px solid var(--gold);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--cyan);
+  font-size: 20px;
+  box-shadow: 0 0 24px var(--cyan-dim);
+  transition: var(--t);
+  position: relative;
+  overflow: hidden;
+}
+.crest::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent 40%, rgba(255,255,255,.18) 50%, transparent 60%);
+  transform: translateX(-100%);
+  transition: transform .6s;
+}
+.brand:hover .crest::after { transform: translateX(100%); }
+.brand:hover .crest { transform: rotate(360deg); }
+.brand strong {
+  font: 700 20px 'Space Grotesk', sans-serif;
+  letter-spacing: .18em;
+}
+.links {
+  display: flex;
+  gap: 28px;
+  list-style: none;
+}
+.links a {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+  position: relative;
+  padding: 6px 0;
+  transition: color .3s;
+}
+.links a::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 0;
+  height: 1.5px;
+  background: linear-gradient(90deg, var(--cyan), var(--gold));
+  transition: width .4s cubic-bezier(0.22,1,0.36,1);
+}
+.links a:hover { color: var(--cyan); }
+.links a:hover::after { width: 100%; }
+
+.theme-switcher {
+  display: flex;
+  gap: 8px;
+  direction: ltr;
+}
+.theme-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  transition: var(--t);
+  cursor: pointer;
+}
+.theme-dot:hover { transform: scale(1.25); }
+.theme-dot.active {
+  border-color: #fff;
+  box-shadow: 0 0 12px currentColor;
+}
+.theme-dot[data-theme-dot="cyan"]   { background: #00d4ff; color: #00d4ff; }
+.theme-dot[data-theme-dot="purple"] { background: #a855f7; color: #a855f7; }
+.theme-dot[data-theme-dot="gold"]   { background: #d4af37; color: #d4af37; }
+.theme-dot[data-theme-dot="pink"]   { background: #ec4899; color: #ec4899; }
+
+.navbtn {
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,.04);
+  color: var(--text);
+  border-radius: 12px;
+  padding: 10px 20px;
+  font-weight: 600;
+  font-size: 13px;
+  transition: var(--t);
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+.navbtn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, var(--cyan), var(--gold));
+  opacity: 0;
+  transition: opacity .3s;
+}
+.navbtn:hover::before { opacity: .12; }
+.navbtn:hover {
+  border-color: var(--cyan);
+  color: var(--cyan);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px var(--cyan-dim);
+}
+.mobile-menu-btn {
+  display: none;
+  width: 40px;
+  height: 40px;
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--text);
+  font-size: 18px;
+  cursor: pointer;
+  place-items: center;
+}
+
+/* Hero */
+.hero {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1.1fr .9fr;
+  gap: 60px;
+  align-items: center;
+  padding: 140px 0 80px;
+}
+.hero-copy { direction: rtl; }
+.badge {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, var(--cyan-dim), transparent);
+  border: 1px solid rgba(0,212,255,.22);
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--cyan);
+  margin-bottom: 24px;
+  backdrop-filter: blur(10px);
+}
+.badge-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--cyan);
+  border-radius: 50%;
+  box-shadow: 0 0 10px var(--cyan);
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%,100% { opacity: 1; transform: scale(1); }
+  50% { opacity: .4; transform: scale(1.45); }
+}
+h1 {
+  font-size: clamp(40px, 5.5vw, 68px);
+  line-height: 1.08;
+  letter-spacing: -.03em;
+  margin: 20px 0 18px;
+  font-weight: 800;
+}
+h1 span {
+  background: linear-gradient(135deg, var(--cyan), var(--gold));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero-desc {
+  color: var(--muted);
+  line-height: 1.9;
+  font-size: 15px;
+  max-width: 500px;
+  margin-bottom: 32px;
+}
+.actions {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 28px;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 14px;
+  position: relative;
+  overflow: hidden;
+  transition: var(--t);
+  border: none;
+  cursor: pointer;
+  font-family: Cairo, sans-serif;
+}
+.primary {
+  background: linear-gradient(135deg, var(--cyan), #0891b2);
+  color: #000;
+  box-shadow: 0 8px 28px var(--cyan-dim);
+}
+.primary:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 14px 40px rgba(0,212,255,.35);
+}
+.primary:active { transform: translateY(-1px) scale(.98); }
+.secondary {
+  background: rgba(255,255,255,.03);
+  border: 1px solid var(--line);
+  color: var(--text);
+}
+.secondary:hover {
+  border-color: var(--cyan);
+  color: var(--cyan);
+  transform: translateY(-3px);
+  background: var(--cyan-dim);
+}
+.hero-stats {
+  display: flex;
+  gap: 32px;
+}
+.stat-item { position: relative; }
+.stat-item::after {
+  content: '';
+  position: absolute;
+  left: -16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1px;
+  height: 30px;
+  background: var(--line);
+}
+.stat-item:first-child::after { display: none; }
+.stat-value {
+  font: 700 26px 'Space Grotesk', sans-serif;
+  color: var(--text);
+  display: block;
+  line-height: 1;
+  margin-bottom: 4px;
+  font-variant-numeric: tabular-nums;
+}
+.stat-label { font-size: 11px; color: var(--muted); }
+
+/* ========== IMPROVED BANK CARD ========== */
+.hero-visual {
+  perspective: 1400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.bank-card-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 460px;
+  transform-style: preserve-3d;
+}
+.bank-card {
+  position: relative;
+  aspect-ratio: 1.586;
+  padding: 28px 32px;
+  border-radius: 22px;
+  background: 
+    linear-gradient(145deg, #0f2a3d 0%, #0a1a28 40%, #071420 100%);
+  border: 1px solid rgba(255,255,255,.1);
+  box-shadow: 
+    0 40px 80px rgba(0,0,0,.65),
+    0 0 0 1px rgba(255,255,255,.05),
+    inset 0 1px 0 rgba(255,255,255,.12);
+  overflow: hidden;
+  transform: rotate(4deg);
+  transition: transform .15s ease-out;
+}
+
+/* Animated border */
+.bank-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 22px;
+  padding: 1.5px;
+  background: linear-gradient(
+    135deg, 
+    var(--cyan) 0%, 
+    transparent 30%, 
+    var(--gold) 50%, 
+    transparent 70%, 
+    var(--cyan) 100%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: .7;
+  animation: borderRotate 10s linear infinite;
+}
+@keyframes borderRotate {
+  0% { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(360deg); }
+}
+
+/* Circuit / micro pattern */
+.card-pattern {
+  position: absolute;
+  inset: 0;
+  background-image: 
+    radial-gradient(circle at 15% 20%, rgba(0,212,255,.07) 0%, transparent 35%),
+    radial-gradient(circle at 85% 75%, rgba(212,175,55,.05) 0%, transparent 30%),
+    linear-gradient(90deg, transparent 49%, rgba(255,255,255,.015) 50%, transparent 51%),
+    linear-gradient(0deg, transparent 49%, rgba(255,255,255,.015) 50%, transparent 51%);
+  background-size: 100% 100%, 100% 100%, 28px 28px, 28px 28px;
+  pointer-events: none;
+  opacity: .9;
+}
+
+/* Shine sweep */
+.card-shine {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 30%,
+    rgba(255,255,255,.04) 42%,
+    rgba(255,255,255,.14) 50%,
+    rgba(255,255,255,.04) 58%,
+    transparent 70%
+  );
+  transform: translateX(-120%);
+  pointer-events: none;
+  z-index: 5;
+}
+.bank-card:hover .card-shine {
+  transform: translateX(120%);
+  transition: transform 1s ease;
+}
+
+/* Holographic circle */
+.card-hologram {
+  position: absolute;
+  top: 24px;
+  right: 28px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: 
+    conic-gradient(from 0deg, var(--cyan), var(--gold), var(--cyan), transparent 70%);
+  filter: blur(14px);
+  opacity: .55;
+  animation: holoPulse 4s ease-in-out infinite;
+  z-index: 1;
+}
+@keyframes holoPulse {
+  0%,100% { opacity: .4; transform: scale(1); }
+  50% { opacity: .75; transform: scale(1.2); }
+}
+
+/* Top row */
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  direction: ltr;
+  position: relative;
+  z-index: 3;
+}
+
+/* Realistic chip */
+.chip {
+  width: 52px;
+  height: 38px;
+  background: linear-gradient(145deg, #f0d78c, #c9a227 40%, #a8861a);
+  border-radius: 7px;
+  position: relative;
+  box-shadow: 
+    inset 0 0 0 1.5px rgba(255,255,255,.35),
+    inset 0 -2px 4px rgba(0,0,0,.25),
+    0 3px 10px rgba(0,0,0,.4);
+  overflow: hidden;
+}
+.chip::before {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  border: 1.2px solid rgba(255,255,255,.28);
+  border-radius: 3px;
+}
+.chip::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  width: 12px;
+  height: 14px;
+  border: 1.2px solid rgba(255,255,255,.3);
+  border-radius: 2px;
+  background: linear-gradient(90deg, transparent 40%, rgba(255,255,255,.15) 50%, transparent 60%);
+}
+
+/* Contactless waves */
+.contactless {
+  width: 26px;
+  height: 26px;
+  opacity: .7;
+  color: rgba(255,255,255,.85);
+  margin-left: 10px;
+}
+
+.card-logo {
+  font: 700 15px 'Space Grotesk', sans-serif;
+  letter-spacing: .22em;
+  color: rgba(255,255,255,.92);
+  text-shadow: 0 1px 3px rgba(0,0,0,.4);
+}
+
+/* Card number */
+.card-number {
+  font: 500 23px 'Space Grotesk', sans-serif;
+  letter-spacing: .18em;
+  direction: ltr;
+  margin-top: 48px;
+  color: #f4f9ff;
+  position: relative;
+  z-index: 3;
+  text-shadow: 0 2px 6px rgba(0,0,0,.45);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Bottom section */
+.card-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  direction: ltr;
+  margin-top: 28px;
+  position: relative;
+  z-index: 3;
+}
+.card-holder-label,
+.card-expiry-label {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  color: rgba(255,255,255,.45);
+  margin-bottom: 5px;
+}
+.card-holder-name,
+.card-expiry-value {
+  font: 500 13px 'Space Grotesk', sans-serif;
+  color: rgba(255,255,255,.95);
+  letter-spacing: .06em;
+}
+.card-brand {
+  font: 700 30px 'Space Grotesk', sans-serif;
+  color: var(--gold);
+  opacity: .95;
+  text-shadow: 0 0 24px var(--gold-dim);
+  line-height: 1;
+}
+
+/* Magnetic stripe simulation */
+.card-stripe {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 58%;
+  height: 38px;
+  background: linear-gradient(
+    90deg,
+    rgba(0,0,0,.55) 0%,
+    rgba(20,20,30,.7) 20%,
+    rgba(0,0,0,.5) 50%,
+    rgba(20,20,30,.7) 80%,
+    rgba(0,0,0,.55) 100%
+  );
+  opacity: .35;
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* Float badges */
+.float-badge {
+  position: absolute;
+  background: rgba(12,18,28,.94);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 12px 18px;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 14px 40px rgba(0,0,0,.45);
+  font-size: 11px;
+  z-index: 10;
+  animation: floatY 6s ease-in-out infinite;
+}
+.float-badge .value {
+  font: 700 18px 'Space Grotesk', sans-serif;
+  color: var(--cyan);
+  display: block;
+  margin-bottom: 2px;
+}
+.float-badge .label {
+  color: var(--muted);
+  font-size: 10px;
+}
+.float-1 { top: -8px; left: -36px; }
+.float-2 { bottom: 20px; right: -28px; animation-delay: 3s; }
+@keyframes floatY {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-14px); }
+}
+
+/* Ticker */
+.ticker-wrap {
+  background: linear-gradient(90deg, rgba(0,212,255,.05), rgba(212,175,55,.05));
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  overflow: hidden;
+  padding: 14px 0;
+  position: relative;
+  z-index: 2;
+}
+.ticker {
+  display: inline-flex;
+  white-space: nowrap;
+  animation: tickerMove 35s linear infinite;
+  gap: 40px;
+}
+.ticker-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--muted);
+  font-family: 'Space Grotesk', monospace;
+}
+.ticker-item .symbol { color: var(--cyan); font-weight: 700; }
+.ticker-item .up { color: var(--success); }
+.ticker-item .down { color: var(--danger); }
+@keyframes tickerMove {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.ticker-wrap:hover .ticker { animation-play-state: paused; }
+
+/* Sections */
+section { position: relative; z-index: 2; }
+.section { padding: 100px 0; }
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 24px;
+  margin-bottom: 40px;
+}
+.section-label {
+  font: 600 11px 'Space Grotesk', sans-serif;
+  letter-spacing: .2em;
+  color: var(--cyan);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-label::before {
+  content: '';
+  width: 24px;
+  height: 1px;
+  background: var(--cyan);
+}
+.section-title {
+  font-size: 32px;
+  font-weight: 800;
+  margin: 0;
+  line-height: 1.2;
+}
+.section-desc {
+  color: var(--muted);
+  font-size: 14px;
+  max-width: 400px;
+  line-height: 1.7;
+  margin: 0;
+}
+
+/* Stats */
+.stats-section { padding: 60px 0; }
+.stats-container {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--line);
+}
+.stat-box {
+  background: var(--surface);
+  padding: 36px 24px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  transition: var(--t);
+}
+.stat-box:hover { background: #0f1724; }
+.stat-box::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--cyan), var(--gold));
+  transform: scaleX(0);
+  transition: transform .4s;
+}
+.stat-box:hover::before { transform: scaleX(1); }
+.stat-box-number {
+  font: 700 36px 'Space Grotesk', sans-serif;
+  color: var(--cyan);
+  display: block;
+  line-height: 1;
+  margin-bottom: 8px;
+  font-variant-numeric: tabular-nums;
+}
+.stat-box-label { font-size: 12px; color: var(--muted); }
+
+/* Steps */
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  position: relative;
+}
+.steps-grid::before {
+  content: '';
+  position: absolute;
+  top: 40px;
+  left: 16.66%;
+  right: 16.66%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--cyan), var(--gold), transparent);
+  opacity: .25;
+}
+.step-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 36px 28px;
+  text-align: center;
+  position: relative;
+  transition: var(--t);
+  z-index: 1;
+}
+.step-card:hover {
+  transform: translateY(-8px);
+  border-color: rgba(0,212,255,.22);
+  box-shadow: 0 24px 50px rgba(0,0,0,.3);
+}
+.step-number {
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, var(--cyan), #0891b2);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font: 800 22px 'Space Grotesk', sans-serif;
+  color: #000;
+  margin: 0 auto 20px;
+  box-shadow: 0 8px 24px var(--cyan-dim);
+  position: relative;
+}
+.step-number::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 1px solid var(--cyan);
+  opacity: .3;
+  animation: ripple 2.5s infinite;
+}
+@keyframes ripple {
+  0% { transform: scale(1); opacity: .5; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+.step-title { font-size: 18px; font-weight: 700; margin-bottom: 10px; }
+.step-desc { color: var(--muted); font-size: 13px; line-height: 1.8; }
+
+/* Features */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.feature-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 28px;
+  position: relative;
+  overflow: hidden;
+  transition: var(--t);
+}
+.feature-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+  opacity: 0;
+  transition: opacity .4s;
+}
+.feature-card:hover::before { opacity: 1; }
+.feature-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(0,212,255,.15);
+  box-shadow: 0 20px 40px rgba(0,0,0,.22);
+}
+.feature-icon {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, var(--cyan-dim), transparent);
+  border: 1px solid rgba(0,212,255,.2);
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  margin-bottom: 20px;
+  transition: var(--t);
+}
+.feature-card:hover .feature-icon {
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 0 20px var(--cyan-dim);
+}
+.feature-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+.feature-desc { color: var(--muted); font-size: 13px; line-height: 1.8; }
+
+/* Dashboard */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1.2fr .8fr;
+  gap: 16px;
+}
+.dashboard-panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 28px;
+  position: relative;
+  overflow: hidden;
+}
+.balance-panel {
+  background: linear-gradient(145deg, #0e2030, #0a1824);
+}
+.balance-panel::after {
+  content: '城';
+  position: absolute;
+  font-size: 200px;
+  color: rgba(255,255,255,.03);
+  left: 20px;
+  bottom: -60px;
+  line-height: 1;
+  pointer-events: none;
+}
+.balance-label {
+  color: var(--muted);
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+.balance-amount {
+  font: 700 42px 'Space Grotesk', sans-serif;
+  background: linear-gradient(135deg, #fff, var(--cyan));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 24px;
+  direction: ltr;
+  display: inline-block;
+  font-variant-numeric: tabular-nums;
+}
+.balance-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+}
+.balance-row span { color: var(--muted); }
+.balance-row b { color: var(--text); font-weight: 600; }
+
+.chart-container {
+  margin-top: 24px;
+  height: 100px;
+  position: relative;
+}
+.chart-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.chart-line {
+  fill: none;
+  stroke: var(--cyan);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: drawLine 2s ease forwards;
+}
+.chart-area {
+  fill: url(#chartGradient);
+  opacity: .3;
+}
+.chart-dot {
+  fill: var(--cyan);
+  r: 3;
+  opacity: 0;
+  animation: fadeIn .3s ease forwards;
+}
+@keyframes drawLine { to { stroke-dashoffset: 0; } }
+@keyframes fadeIn { to { opacity: 1; } }
+
+.activity-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+.activity-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+  transition: var(--t);
+}
+.activity-item:hover {
+  padding-right: 8px;
+  background: rgba(255,255,255,.02);
+}
+.activity-item:last-child { border-bottom: none; }
+.activity-name {
+  color: var(--muted);
+  font-size: 12px;
+}
+.activity-amount {
+  font: 600 14px 'Space Grotesk', sans-serif;
+  direction: ltr;
+}
+
+/* Security */
+.security-section { padding: 60px 0; }
+.security-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+.security-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 28px;
+  text-align: center;
+  transition: var(--t);
+}
+.security-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(0,212,255,.2);
+}
+.security-icon {
+  font-size: 32px;
+  margin-bottom: 12px;
+  display: block;
+}
+.security-title {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.security-desc {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+/* FAQ */
+.faq-container { margin-top: 28px; }
+.faq-item {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  margin-bottom: 12px;
+  overflow: hidden;
+  transition: var(--t);
+}
+.faq-item:hover { border-color: rgba(0,212,255,.12); }
+.faq-question {
+  padding: 18px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: color .3s;
+  user-select: none;
+}
+.faq-question:hover { color: var(--cyan); }
+.faq-icon {
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--cyan-dim);
+  border: 1px solid rgba(0,212,255,.2);
+  font: 700 16px 'Space Grotesk', sans-serif;
+  color: var(--cyan);
+  transition: all .3s;
+  flex-shrink: 0;
+  margin-right: 12px;
+}
+.faq-item.open .faq-icon {
+  transform: rotate(45deg);
+  background: var(--cyan);
+  color: #000;
+}
+.faq-answer {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height .5s cubic-bezier(0.22,1,0.36,1), padding .4s;
+}
+.faq-item.open .faq-answer {
+  max-height: 300px;
+  padding: 0 24px 18px;
+}
+.faq-answer p {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.9;
+  margin: 0;
+}
+
+/* CTA */
+.cta-box {
+  background: linear-gradient(135deg, var(--cyan-dim), var(--gold-dim));
+  border: 1px solid rgba(0,212,255,.2);
+  border-radius: 28px;
+  padding: 48px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 40px;
+  position: relative;
+  overflow: hidden;
+}
+.cta-box::before {
+  content: '';
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, var(--cyan-dim), transparent 70%);
+  top: -100px;
+  left: -100px;
+  animation: pulse 8s infinite;
+}
+.cta-title {
+  font-size: 30px;
+  font-weight: 800;
+  margin-bottom: 10px;
+  position: relative;
+  z-index: 1;
+}
+.cta-desc {
+  color: var(--muted);
+  font-size: 14px;
+  position: relative;
+  z-index: 1;
+  max-width: 400px;
+}
+.cta-form {
+  display: flex;
+  gap: 10px;
+  min-width: 400px;
+  position: relative;
+  z-index: 1;
+}
+.cta-input {
+  flex: 1;
+  padding: 14px 18px;
+  background: rgba(0,0,0,.3);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  color: var(--text);
+  font-family: Cairo, sans-serif;
+  font-size: 14px;
+  outline: none;
+  transition: var(--t);
+}
+.cta-input:focus {
+  border-color: var(--cyan);
+  box-shadow: 0 0 0 3px var(--cyan-dim);
+}
+.cta-input::placeholder { color: rgba(255,255,255,.3); }
+
+/* Footer */
+footer {
+  border-top: 1px solid var(--line);
+  padding: 40px 0 30px;
+  position: relative;
+  z-index: 2;
+}
+.footer-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+.footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  direction: ltr;
+}
+.footer-brand .crest {
+  width: 32px;
+  height: 32px;
+  font-size: 14px;
+}
+.footer-brand span {
+  font: 700 16px 'Space Grotesk', sans-serif;
+  letter-spacing: .1em;
+}
+.footer-trust {
+  display: flex;
+  gap: 12px;
+}
+.trust-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: rgba(255,255,255,.03);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 11px;
+  color: var(--muted);
+  transition: var(--t);
+}
+.trust-badge:hover {
+  border-color: var(--cyan);
+  color: var(--cyan);
+  transform: translateY(-2px);
+}
+.footer-links {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 20px;
+}
+.footer-links a {
+  color: var(--muted);
+  font-size: 12px;
+  position: relative;
+  transition: color .3s;
+}
+.footer-links a::after {
+  content: '';
+  position: absolute;
+  bottom: -3px;
+  right: 0;
+  width: 0;
+  height: 1px;
+  background: var(--cyan);
+  transition: width .3s;
+}
+.footer-links a:hover { color: var(--cyan); }
+.footer-links a:hover::after { width: 100%; }
+.footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* Toast */
+.toast {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  background: #0f1724;
+  border: 1px solid rgba(0,212,255,.3);
+  border-radius: 14px;
+  padding: 16px 20px;
+  font-size: 13px;
+  color: var(--text);
+  transform: translateY(120px);
+  opacity: 0;
+  transition: all .5s cubic-bezier(0.22,1,0.36,1);
+  z-index: 10000;
+  box-shadow: 0 20px 50px rgba(0,0,0,.5);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.toast.show {
+  transform: translateY(0);
+  opacity: 1;
+}
+.toast-icon {
+  width: 20px;
+  height: 20px;
+  background: var(--success);
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #000;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* Mobile Menu */
+.mobile-menu {
+  position: fixed;
+  inset: 0;
+  background: rgba(4,7,12,.98);
+  backdrop-filter: blur(20px);
+  z-index: 99;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .4s;
+}
+.mobile-menu.open {
+  opacity: 1;
+  pointer-events: all;
+}
+.mobile-menu a {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+  transition: color .3s;
+}
+.mobile-menu a:hover { color: var(--cyan); }
+.mobile-menu .close-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  width: 44px;
+  height: 44px;
+  color: var(--text);
+  font-size: 20px;
+  cursor: pointer;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  body { cursor: auto; }
+  .cursor, .cursor-dot { display: none !important; }
+  .links { display: none; }
+  .mobile-menu-btn { display: grid; }
+  .hero {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    padding: 120px 0 60px;
+  }
+  .hero-visual { order: -1; }
+  .steps-grid,
+  .features-grid,
+  .stats-container,
+  .security-grid {
+    grid-template-columns: 1fr;
+  }
+  .steps-grid::before { display: none; }
+  .dashboard-grid { grid-template-columns: 1fr; }
+  .cta-box {
+    flex-direction: column;
+    text-align: center;
+  }
+  .cta-form {
+    min-width: auto;
+    width: 100%;
+  }
+  .footer-top {
+    flex-direction: column;
+    gap: 16px;
+  }
+  .footer-bottom {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+  }
+  .security-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 520px) {
+  .wrap { width: calc(100% - 32px); }
+  h1 { font-size: 36px; }
+  .stat-box-number { font-size: 28px; }
+  .cta-box { padding: 28px 20px; }
+  .cta-form { flex-direction: column; }
+  .security-grid { grid-template-columns: 1fr; }
+  .bank-card { transform: rotate(0); }
+  .float-1, .float-2 { display: none; }
+}
+</style>
+</head>
+<body data-theme="cyan">
+
+<!-- PRELOADER -->
+<div id="preloader" role="status" aria-label="جاري التحميل">
+  <div class="loader-ring">城</div>
+  <div class="loader-text">SHIRO KINGDOM CENTRAL BANK</div>
+  <div class="loader-bar"></div>
+</div>
+
+<!-- CURSOR -->
+<div class="cursor" id="cursor" aria-hidden="true"></div>
+<div class="cursor-dot" id="cursor-dot" aria-hidden="true"></div>
+
+<!-- PROGRESS -->
+<div class="progress-bar" id="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100"></div>
+
+<!-- BACKGROUND -->
+<div class="bg-orb orb-1" aria-hidden="true"></div>
+<div class="bg-orb orb-2" aria-hidden="true"></div>
+<canvas id="particles" aria-hidden="true"></canvas>
+
+<!-- TOP BAR -->
+<div class="top">
+  <div class="wrap">
+    <span>البنك المركزي لمملكة Shiro</span>
+    <span class="live-clock" id="live-clock">00:00:00 UTC</span>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header id="header">
+  <nav class="wrap" aria-label="القائمة الرئيسية">
+    <a href="#" class="brand" aria-label="Shiro Bank الصفحة الرئيسية">
+      <span class="crest">城</span>
+      <strong>SHIRO</strong>
+    </a>
+    <ul class="links">
+      <li><a href="#how">كيف يعمل</a></li>
+      <li><a href="#features">المزايا</a></li>
+      <li><a href="#account">حسابي</a></li>
+      <li><a href="#security">الأمان</a></li>
+      <li><a href="#faq">الأسئلة</a></li>
+    </ul>
+    <div class="theme-switcher" role="group" aria-label="تغيير الثيم">
+      <button class="theme-dot active" data-theme-dot="cyan" aria-label="ثيم سماوي" title="Cyan"></button>
+      <button class="theme-dot" data-theme-dot="purple" aria-label="ثيم بنفسجي" title="Purple"></button>
+      <button class="theme-dot" data-theme-dot="gold" aria-label="ثيم ذهبي" title="Gold"></button>
+      <button class="theme-dot" data-theme-dot="pink" aria-label="ثيم وردي" title="Pink"></button>
+    </div>
+    <button class="navbtn" onclick="showToast('الدخول مخصص لأعضاء Shiro المعتمدين')">دخول البنك</button>
+    <button class="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="فتح القائمة">☰</button>
+  </nav>
+</header>
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobile-menu" role="dialog" aria-label="القائمة">
+  <button class="close-btn" onclick="toggleMobileMenu()" aria-label="إغلاق القائمة">✕</button>
+  <a href="#how" onclick="toggleMobileMenu()">كيف يعمل</a>
+  <a href="#features" onclick="toggleMobileMenu()">المزايا</a>
+  <a href="#account" onclick="toggleMobileMenu()">حسابي</a>
+  <a href="#security" onclick="toggleMobileMenu()">الأمان</a>
+  <a href="#faq" onclick="toggleMobileMenu()">الأسئلة</a>
+</div>
+
+<main>
+
+<!-- HERO -->
+<section class="hero wrap">
+  <div class="hero-copy">
+    <div class="badge">
+      <span class="badge-dot"></span>
+      <span>البنك المركزي لمملكة Shiro</span>
+    </div>
+    <h1>ثروة المملكة،<br><span>تحت حماية العرش.</span></h1>
+    <p class="hero-desc">بنك مملكة Shiro المركزي؛ تُدار من خلاله نقاط الأعضاء ومكافآتهم ومزاياهم داخل المملكة ونقاباتها، وفق النظام المعتمد من الإدارة.</p>
+    <div class="actions">
+      <a href="#join" class="btn primary">انضم إلى بنك المملكة ←</a>
+      <a href="#how" class="btn secondary">اعرف نظام المملكة</a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat-item">
+        <span class="stat-value" data-counter="2847">0</span>
+        <span class="stat-label">عضو نشط</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value" data-counter="156420">0</span>
+        <span class="stat-label">نقطة موزعة</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value" data-counter="43">0</span>
+        <span class="stat-label">نقابة</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-visual">
+    <div class="bank-card-wrapper" id="card-wrapper">
+      <div class="bank-card" id="bank-card">
+        <div class="card-shine"></div>
+        <div class="card-pattern"></div>
+        <div class="card-hologram"></div>
+        <div class="card-stripe"></div>
+
+        <div class="card-top">
+          <div style="display:flex;align-items:center;gap:4px">
+            <div class="chip"></div>
+            <svg class="contactless" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <path d="M8.5 8.5c2.5-2.5 6.5-2.5 9 0"/>
+              <path d="M6 6c3.5-3.5 9-3.5 12.5 0"/>
+              <path d="M11 11c1.2-1.2 3.2-1.2 4.4 0"/>
+            </svg>
+          </div>
+          <span class="card-logo">SHIRO BANK</span>
+        </div>
+
+        <div class="card-number">SHR • 0000 • 2048</div>
+
+        <div class="card-bottom">
+          <div>
+            <div class="card-holder-label">Card Holder</div>
+            <div class="card-holder-name">SHIRO MEMBER</div>
+          </div>
+          <div style="text-align:center">
+            <div class="card-expiry-label">Valid Thru</div>
+            <div class="card-expiry-value">12 / 29</div>
+          </div>
+          <div class="card-brand">城</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="float-badge float-1">
+      <span class="value">+500</span>
+      <span class="label">مكافأة المملكة</span>
+    </div>
+    <div class="float-badge float-2">
+      <span class="value">SECURE</span>
+      <span class="label">حساب معتمد</span>
+    </div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker-wrap" aria-hidden="true">
+  <div class="ticker" id="ticker">
+    <span class="ticker-item"><span class="symbol">SHIRO</span><span class="up">▲ +2.4%</span></span>
+    <span class="ticker-item"><span class="symbol">ANIME</span><span class="up">▲ +5.1%</span></span>
+    <span class="ticker-item"><span class="symbol">OTAKU</span><span class="down">▼ -1.2%</span></span>
+    <span class="ticker-item"><span class="symbol">MANGA</span><span class="up">▲ +3.8%</span></span>
+    <span class="ticker-item"><span class="symbol">COSPL</span><span class="up">▲ +1.9%</span></span>
+    <span class="ticker-item"><span class="symbol">GUILD</span><span class="up">▲ +4.2%</span></span>
+    <span class="ticker-item"><span class="symbol">QUEST</span><span class="down">▼ -0.8%</span></span>
+    <span class="ticker-item"><span class="symbol">EVENT</span><span class="up">▲ +6.5%</span></span>
+  </div>
+</div>
+
+<!-- STATS -->
+<section class="stats-section wrap">
+  <div class="stats-container">
+    <div class="stat-box">
+      <span class="stat-box-number" data-counter="2847">0</span>
+      <span class="stat-box-label">أعضاء المملكة</span>
+    </div>
+    <div class="stat-box">
+      <span class="stat-box-number" data-counter="156420">0</span>
+      <span class="stat-box-label">نقاط المملكة</span>
+    </div>
+    <div class="stat-box">
+      <span class="stat-box-number" data-counter="43">0</span>
+      <span class="stat-box-label">نقابات معتمدة</span>
+    </div>
+    <div class="stat-box">
+      <span class="stat-box-number">24/7</span>
+      <span class="stat-box-label">تشغيل البنك</span>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section" id="how">
+  <div class="wrap">
+    <div class="section-header">
+      <div>
+        <div class="section-label">How It Works</div>
+        <h2 class="section-title">كيف يعمل النظام؟</h2>
+      </div>
+      <p class="section-desc">ثلاث خطوات بسيطة لاستخدام بنك المملكة.</p>
+    </div>
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-number">1</div>
+        <h3 class="step-title">انضم إلى المجتمع</h3>
+        <p class="step-desc">كن عضوًا في مملكة Shiro أو إحدى نقاباتها المعتمدة.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-number">2</div>
+        <h3 class="step-title">شارك واكسب</h3>
+        <p class="step-desc">شارك في فعاليات المملكة ونقاباتها، واحصل على نقاطك.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-number">3</div>
+        <h3 class="step-title">استبدل نقاطك</h3>
+        <p class="step-desc">استبدل نقاطك بالرتب والمزايا المعتمدة من المملكة.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="section" id="features">
+  <div class="wrap">
+    <div class="section-header">
+      <div>
+        <div class="section-label">Features</div>
+        <h2 class="section-title">أدوات بنك المملكة</h2>
+      </div>
+      <p class="section-desc">نظام داخلي موحد لأعضاء المملكة ونقاباتها المعتمدة.</p>
+    </div>
+    <div class="features-grid">
+      <article class="feature-card">
+        <div class="feature-icon">◈</div>
+        <h3 class="feature-title">محفظة النقاط</h3>
+        <p class="feature-desc">تابع رصيد نقاطك وسجل مكافآتك وعمليات الاستبدال.</p>
+      </article>
+      <article class="feature-card">
+        <div class="feature-icon">⇄</div>
+        <h3 class="feature-title">تحويل النقاط</h3>
+        <p class="feature-desc">حوّل النقاط إلى أعضاء المملكة وفق صلاحيات النظام.</p>
+      </article>
+      <article class="feature-card">
+        <div class="feature-icon">▣</div>
+        <h3 class="feature-title">هوية العضو</h3>
+        <p class="feature-desc">بطاقة عضوية رمزية تثبت انتماءك لمملكة Shiro.</p>
+      </article>
+      <article class="feature-card">
+        <div class="feature-icon">🏆</div>
+        <h3 class="feature-title">لوحة الترتيب</h3>
+        <p class="feature-desc">تابع ترتيب أعضاء المملكة والنقابات وفق النقاط المكتسبة.</p>
+      </article>
+      <article class="feature-card">
+        <div class="feature-icon">🎁</div>
+        <h3 class="feature-title">مكافآت المشاركة</h3>
+        <p class="feature-desc">مكافآت تعتمدها إدارة المملكة والنقابات للفعاليات والمشاركة.</p>
+      </article>
+      <article class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <h3 class="feature-title">سجل واضح</h3>
+        <p class="feature-desc">تظهر عمليات النقاط وتحديثاتها داخل حسابك بشكل واضح.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- DASHBOARD -->
+<section class="section" id="account">
+  <div class="wrap">
+    <div class="section-header">
+      <div>
+        <div class="section-label">Your Account</div>
+        <h2 class="section-title">لمحة عن حسابك</h2>
+      </div>
+      <p class="section-desc">لوحة تجريبية توضح حساب العضو؛ الرصيد والعمليات الفعلية تُدار من نظام بنك المملكة.</p>
+    </div>
+    <div class="dashboard-grid">
+      <div class="dashboard-panel balance-panel">
+        <div class="balance-label">رصيد نقاط المملكة</div>
+        <div class="balance-amount">🪙 12,480</div>
+        <div class="balance-row">
+          <span>معرّف عضو Shiro</span>
+          <b>SHR •••• 2048</b>
+        </div>
+        <div class="balance-row">
+          <span>الحالة</span>
+          <b style="color:var(--success)">● نشط</b>
+        </div>
+        <div class="balance-row">
+          <span>آخر تحديث</span>
+          <b id="live-time">--:--</b>
+        </div>
+        <div class="chart-container">
+          <svg class="chart-svg" viewBox="0 0 400 100" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="var(--cyan)" stop-opacity=".5"/>
+                <stop offset="100%" stop-color="var(--cyan)" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <path class="chart-area" d="M0,80 Q50,60 100,70 T200,40 T300,50 T400,20 L400,100 L0,100 Z"/>
+            <path class="chart-line" d="M0,80 Q50,60 100,70 T200,40 T300,50 T400,20"/>
+            <circle class="chart-dot" cx="400" cy="20" style="animation-delay:1.8s"/>
+          </svg>
+        </div>
+      </div>
+      <div class="dashboard-panel">
+        <h3 class="activity-title">آخر العمليات</h3>
+        <div class="activity-item">
+          <span class="activity-name">مكافأة فعالية — المملكة</span>
+          <span class="activity-amount" style="color:var(--success)">+850 🪙</span>
+        </div>
+        <div class="activity-item">
+          <span class="activity-name">استبدال رتبة داخل النقابة</span>
+          <span class="activity-amount" style="color:var(--danger)">-120 🪙</span>
+        </div>
+        <div class="activity-item">
+          <span class="activity-name">تحويل من عضو بالمملكة</span>
+          <span class="activity-amount" style="color:var(--success)">+300 🪙</span>
+        </div>
+        <div class="activity-item">
+          <span class="activity-name">ميزة معتمدة من Shiro</span>
+          <span class="activity-amount" style="color:var(--danger)">-45 🪙</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECURITY -->
+<section class="security-section" id="security">
+  <div class="wrap">
+    <div class="section-header">
+      <div>
+        <div class="section-label">Security</div>
+        <h2 class="section-title">أمان بنك المملكة</h2>
+      </div>
+      <p class="section-desc">نظام حماية متعدد الطبقات لضمان سلامة نقاطك وبياناتك.</p>
+    </div>
+    <div class="security-grid">
+      <div class="security-card">
+        <span class="security-icon">🔐</span>
+        <h3 class="security-title">تشفير كامل</h3>
+        <p class="security-desc">بياناتك مشفرة من طرف إلى طرف داخل خوادم المملكة.</p>
+      </div>
+      <div class="security-card">
+        <span class="security-icon">🛡️</span>
+        <h3 class="security-title">حماية الحساب</h3>
+        <p class="security-desc">تحقق ثنائي وتسجيل دخول آمن لكل أعضاء Shiro.</p>
+      </div>
+      <div class="security-card">
+        <span class="security-icon">📋</span>
+        <h3 class="security-title">سجل الشفافية</h3>
+        <p class="security-desc">كل عملية مسجلة وقابلة للمراجعة من قبل العضو.</p>
+      </div>
+      <div class="security-card">
+        <span class="security-icon">⚡</span>
+        <h3 class="security-title">مراقبة فورية</h3>
+        <p class="security-desc">كشف فوري لأي نشاط مشبوه على الحساب.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" id="faq">
+  <div class="wrap">
+    <div class="section-header">
+      <div>
+        <div class="section-label">FAQ</div>
+        <h2 class="section-title">الأسئلة الرسمية</h2>
+      </div>
+      <p class="section-desc">إجابات على أسئلتك</p>
+    </div>
+    <div class="faq-container">
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)" role="button" tabindex="0" aria-expanded="false">
+          <span>كيف أكسب النقاط؟</span>
+          <span class="faq-icon">+</span>
+        </div>
+        <div class="faq-answer">
+          <p>من التفاعل والمشاركة في النقاشات والفعاليات والمسابقات، وفق قواعد كل مجتمع.</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)" role="button" tabindex="0" aria-expanded="false">
+          <span>هل النظام مجاني؟</span>
+          <span class="faq-icon">+</span>
+        </div>
+        <div class="faq-answer">
+          <p>البنك مخصص لمملكة Shiro ونقاباتها فقط، وتُحدد صلاحيات الحساب والمزايا من إدارة المملكة.</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)" role="button" tabindex="0" aria-expanded="false">
+          <span>هل أقدر أحوّل نقاطًا لعضو آخر؟</span>
+          <span class="faq-icon">+</span>
+        </div>
+        <div class="faq-answer">
+          <p>يمكن ذلك إذا كانت خاصية التحويل مفعّلة، ووفق القواعد والصلاحيات التي تحددها إدارة Shiro.</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)" role="button" tabindex="0" aria-expanded="false">
+          <span>كيف أضيف النظام لمجتمعي؟</span>
+          <span class="faq-icon">+</span>
+        </div>
+        <div class="faq-answer">
+          <p>التفعيل يتم من خلال إدارة Shiro للنقابات والأعضاء المعتمدين داخل المملكة.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="section" id="join">
+  <div class="wrap">
+    <div class="cta-box">
+      <div>
+        <h2 class="cta-title">انضم لبنك المملكة الآن</h2>
+        <p class="cta-desc">سجّل بريدك عشان نضيف النظام لمجموعتك أو تحصل على دعوة مبكرة</p>
+      </div>
+      <form class="cta-form" onsubmit="event.preventDefault();showToast('تم تسجيل اهتمامك بنجاح! هنتواصل معاك قريبًا');this.reset()">
+        <input type="email" class="cta-input" placeholder="البريد الإلكتروني" required aria-label="البريد الإلكتروني">
+        <button type="submit" class="btn primary">سجّل الآن ↗</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <div class="wrap">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <span class="crest">城</span>
+        <span>SHIRO BANK</span>
+      </div>
+      <div class="footer-trust">
+        <span class="trust-badge">🔒 نظام داخلي</span>
+        <span class="trust-badge">✅ نقاط المملكة فقط</span>
+        <span class="trust-badge">🛡️ لأعضاء Shiro</span>
+      </div>
+    </div>
+    <div class="footer-links">
+      <a href="#">الخصوصية</a>
+      <a href="#">الشروط</a>
+      <a href="#">تواصل معنا</a>
+      <a href="#">ديسكورد</a>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Shiro Kingdom — البنك المركزي للمملكة</span>
+      <span>الأمان · الانتماء · راية واحدة</span>
+    </div>
+  </div>
+</footer>
+
+<!-- TOAST -->
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <span class="toast-icon">✓</span>
+  <span id="toast-message"></span>
+</div>
+
+<script>
+// Preloader
+window.addEventListener('load', () => {
+  setTimeout(() => document.getElementById('preloader').classList.add('hide'), 1800);
+});
+
+// Cursor
+const cursor = document.getElementById('cursor');
+const cursorDot = document.getElementById('cursor-dot');
+const isFinePointer = window.matchMedia('(pointer: fine)').matches;
+
+if (isFinePointer) {
+  let mx = 0, my = 0, cx = 0, cy = 0;
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX;
+    my = e.clientY;
+    cursorDot.style.left = mx + 'px';
+    cursorDot.style.top = my + 'px';
+  });
+  function animCursor() {
+    cx += (mx - cx) * .15;
+    cy += (my - cy) * .15;
+    cursor.style.left = cx + 'px';
+    cursor.style.top = cy + 'px';
+    requestAnimationFrame(animCursor);
+  }
+  animCursor();
+  document.querySelectorAll('a, button, .btn, .theme-dot').forEach(el => {
+    el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
+    el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
+  });
+}
+
+// Particles
+const canvas = document.getElementById('particles');
+const ctx = canvas.getContext('2d');
+let particles = [];
+const PARTICLE_COUNT = window.innerWidth < 768 ? 25 : 45;
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+for (let i = 0; i < PARTICLE_COUNT; i++) {
+  particles.push({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    s: Math.random() * 1.8 + .4,
+    sy: Math.random() * .25 + .08,
+    sx: (Math.random() - .5) * .12,
+    o: Math.random() * .35 + .08
+  });
+}
+
+function drawParticles() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  particles.forEach((p, i) => {
+    p.y -= p.sy;
+    p.x += p.sx;
+    if (p.y < -10) {
+      p.y = canvas.height + 10;
+      p.x = Math.random() * canvas.width;
+    }
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.s, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(0,212,255,${p.o})`;
+    ctx.fill();
+
+    for (let j = i + 1; j < particles.length; j++) {
+      const p2 = particles[j];
+      const dx = p.x - p2.x;
+      const dy = p.y - p2.y;
+      const d = Math.sqrt(dx * dx + dy * dy);
+      if (d < 100) {
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
+        ctx.lineTo(p2.x, p2.y);
+        ctx.strokeStyle = `rgba(0,212,255,${.05 * (1 - d / 100)})`;
+        ctx.lineWidth = .4;
+        ctx.stroke();
+      }
+    }
+  });
+  requestAnimationFrame(drawParticles);
+}
+drawParticles();
+
+// Header + Progress
+window.addEventListener('scroll', () => {
+  const scrolled = window.scrollY;
+  const height = document.documentElement.scrollHeight - window.innerHeight;
+  document.getElementById('progress-bar').style.width = (scrolled / height * 100) + '%';
+  document.getElementById('header').classList.toggle('scrolled', scrolled > 50);
+});
+setTimeout(() => document.getElementById('header').classList.add('visible'), 250);
+
+// Card Tilt
+const cardWrap = document.getElementById('card-wrapper');
+const card = document.getElementById('bank-card');
+if (cardWrap && isFinePointer) {
+  cardWrap.addEventListener('mousemove', e => {
+    const r = cardWrap.getBoundingClientRect();
+    const x = (e.clientX - r.left) / r.width;
+    const y = (e.clientY - r.top) / r.height;
+    card.style.transform = `perspective(1200px) rotateX(${(y - .5) * -14}deg) rotateY(${(x - .5) * 14}deg) rotate(4deg)`;
+  });
+  cardWrap.addEventListener('mouseleave', () => {
+    card.style.transform = 'rotate(4deg)';
+    card.style.transition = 'transform .6s';
+  });
+  cardWrap.addEventListener('mouseenter', () => {
+    card.style.transition = 'transform .1s';
+  });
+}
+
+// Counters
+const counterObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const target = parseInt(e.target.dataset.counter);
+      const duration = 2000;
+      const start = performance.now();
+      function update(now) {
+        const progress = Math.min((now - start) / duration, 1);
+        const value = Math.floor(target * (1 - Math.pow(1 - progress, 4)));
+        e.target.textContent = value.toLocaleString('en-US');
+        if (progress < 1) requestAnimationFrame(update);
+      }
+      requestAnimationFrame(update);
+      counterObs.unobserve(e.target);
+    }
+  });
+}, { threshold: .5 });
+document.querySelectorAll('[data-counter]').forEach(el => counterObs.observe(el));
+
+// Ticker
+const ticker = document.getElementById('ticker');
+ticker.innerHTML += ticker.innerHTML;
+
+// FAQ
+function toggleFaq(el) {
+  const item = el.parentElement;
+  const isOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(i => {
+    i.classList.remove('open');
+    i.querySelector('.faq-question').setAttribute('aria-expanded', 'false');
+  });
+  if (!isOpen) {
+    item.classList.add('open');
+    el.setAttribute('aria-expanded', 'true');
+  }
+}
+document.querySelectorAll('.faq-question').forEach(q => {
+  q.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      toggleFaq(q);
+    }
+  });
+});
+
+// Mobile Menu
+function toggleMobileMenu() {
+  document.getElementById('mobile-menu').classList.toggle('open');
+}
+
+// Toast
+function showToast(message) {
+  const t = document.getElementById('toast');
+  const tm = document.getElementById('toast-message');
+  tm.textContent = message;
+  t.classList.add('show');
+  clearTimeout(window.toastTimer);
+  window.toastTimer = setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+// Theme
+document.querySelectorAll('.theme-dot').forEach(dot => {
+  dot.addEventListener('click', () => {
+    const theme = dot.dataset.themeDot;
+    document.body.dataset.theme = theme;
+    document.querySelectorAll('.theme-dot').forEach(d => d.classList.remove('active'));
+    dot.classList.add('active');
+    localStorage.setItem('shiro-theme', theme);
+    showToast('تم تغيير الثيم');
+  });
+});
+const savedTheme = localStorage.getItem('shiro-theme');
+if (savedTheme) {
+  document.body.dataset.theme = savedTheme;
+  document.querySelectorAll('.theme-dot').forEach(d => {
+    d.classList.toggle('active', d.dataset.themeDot === savedTheme);
+  });
+}
+
+// Live Clock
+function updateClock() {
+  const now = new Date();
+  document.getElementById('live-clock').textContent = now.toISOString().substr(11, 8) + ' UTC';
+  document.getElementById('live-time').textContent = now.toLocaleTimeString('ar-EG', {
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+updateClock();
+setInterval(updateClock, 1000);
+
+// Smooth Scroll
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', function(e) {
+    e.preventDefault();
+    const target = document.querySelector(this.getAttribute('href'));
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+
+// Scroll Reveal
+const revealObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) e.target.classList.add('visible');
+  });
+}, { threshold: .12, rootMargin: '0px 0px -40px 0px' });
+
+document.querySelectorAll('.section-header, .step-card, .feature-card, .stat-box, .dashboard-panel, .faq-item, .cta-box, .security-card').forEach(el => {
+  el.style.opacity = '0';
+  el.style.transform = 'translateY(32px)';
+  el.style.transition = 'all .75s cubic-bezier(0.22,1,0.36,1)';
+  revealObs.observe(el);
+});
+
+const style = document.createElement('style');
+style.textContent = `.visible { opacity: 1 !important; transform: translateY(0) !important; }`;
+document.head.appendChild(style);
+</script>
+</body>
+</html>
